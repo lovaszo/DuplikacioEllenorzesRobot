@@ -294,10 +294,10 @@ Batch DOCX ellenőrzés
     Run Keyword If    ${is_error}    Append To List    ${HIBA_LISTA}    ${hiba_entry}
     # Először redundancia rekordot beszúrjuk, majd átadjuk az ID-t a DOCX feldolgozásnak
     ${redundancia_id}=    Fájladatok Feldolgozása Redundancia Táblába    ${docx_file}    ${is_error}    ${szoveg}
-    ${tul_rovid_szamlalo}=    Run Keyword If    '${redundancia_id}' != ''    DOCX Beolvasás Teszt    ${docx_file}    ${redundancia_id}
+    Run Keyword If    '${redundancia_id}' != ''    DOCX Beolvasás Teszt    ${docx_file}    ${redundancia_id}
     ${overview_string}=    Get Variable Value    ${overview_string}    ''
     Log To Console    \n<<< BEFEJEZVE: ${docx_file}
-    Log To Console    Túl rövid mondatok: ${tul_rovid_szamlalo}
+    # Log To Console    Túl rövid mondatok: ${tul_rovid_szamlalo}
     END
 
     # Hibalista kiírása a végén

@@ -71,21 +71,19 @@ DOCX Beolvasás Teszt
     # REDUNDANCIA_ID globálissá tétele, ha más kulcsszóból is kellene
     Set Global Variable    ${REDUNDANCIA_ID}
     ${TOKEN_MIN}=    Evaluate    __import__('sys').path.append('libraries') or int(__import__('duplikacio_config').DuplikacioConfig().get('token_min', 10))
-    ${tul_rovid_szamlalo}=    Set Variable    0
+    # ${tul_rovid_szamlalo}=    Set Variable    0
     ${progress_counter}=    Set Variable    0
     FOR    ${sor}    IN    @{sorok}
         # Sor hosszának ellenőrzése - token_min karakternél rövidebb sorokat kihagyjuk
         ${sor_hossz}=    Get Length    ${sor}
         IF    ${sor_hossz} < ${TOKEN_MIN}
             ${sor_index}=    Evaluate    ${sor_index} + 1
-            ${tul_rovid_szamlalo}=    Evaluate    ${tul_rovid_szamlalo} + 1
             CONTINUE    # Túl rövid sor, kihagyjuk
         END
         ${tomoritett}=    Replace String Using Regexp    ${sor}    [^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]    ${EMPTY}
         ${sor_hossz}=    Get Length    ${tomoritett}
         IF    ${sor_hossz} < ${TOKEN_MIN}
             ${sor_index}=    Evaluate    ${sor_index} + 1
-            ${tul_rovid_szamlalo}=    Evaluate    ${tul_rovid_szamlalo} + 1
             CONTINUE    # Túl rövid sor, kihagyjuk
         END
 
@@ -210,7 +208,7 @@ DOCX Beolvasás Teszt
         END
     END
     # Log To Console    ${EMPTY}    # új sor hozzáadása a végén
-    #Otto was here RETURN    ${tul_rovid_szamlalo}
+    #Otto was here
     # Ha a legutolsó sorok duplikációs blokkban voltak, a max értékeket még egyszer frissíteni kell
     IF    ${aktualis_duplikacio_szamlaló} > 0
         ${uj_max_duplikacio}=    Evaluate    max(${max_duplikacio_szamlaló}, ${aktualis_duplikacio_szamlaló})
