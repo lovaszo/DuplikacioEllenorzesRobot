@@ -1,0 +1,106 @@
+PLAGIUM ELLENORZO RENDSZER - TELEPITO UTMUTATO
+===============================================
+
+RENDSZERKOVETELMÉNYEK:
+- Windows 10/11
+- Python 3.8 vagy ujabb verzio (python.org)
+- Microsoft Outlook (email kuldeshez)
+
+TELEPITES LEPÉSEI:
+1. Ellenorizze, hogy a Python telepitve van:
+   - Nyisson terminalt (PowerShell)
+   - Irja be: python --version
+   - Ha nincs Python, telepitse a python.org oldalrol
+
+2. Futtassa a telepitot:
+   - Dupla kattintas: telepito.bat
+   - Vagy PowerShell-bol: .\telepito.bat
+
+3. Adja meg a telepitesi konyvtarat:
+   - Pelda: C:\PlagiumEllenorzo
+   - Pelda: D:\MyProjects\Plagium
+
+4. Varjon a telepites befejezesere
+
+5. OPCIONALIS: Azonnali teszt
+   - A telepito felkinalja a teszt futtatast
+   - "i" valasz: azonnali teszt
+   - "n" valasz: kesobb manualis inditas
+
+TELEPITES UTAN:
+1. Menjen a telepitesi konyvtarba
+2. Szerkessze a Plagium.config fajlt:
+   - email = az on email cime
+   - input_folder = DOCX fajlok helye
+   - output_folder = Excel exportok helye
+
+3. Futtassa: start.bat
+
+TELEPITETT KOMPONENSEK:
+- Robot Framework (automatizalas)
+- Database Library (adatbazis mukodes)
+- OpenPyXL (Excel export)
+- Python-docx (DOCX olvaso)
+- PyWin32 (email kuldes)
+- Teljes forraskod (11 fajl)
+- Virtualis kornyezet
+
+FAJLOK:
+- start.bat              - Fo program inditasa
+- Plagium.config         - Konfiguracio
+- PLG-00-main.robot      - Fo teszt
+- plagium_config.py      - Python konfiguracio
+- get_config.py          - Robot Framework konfiguracio
+- send_email.py          - Email rendszer
+- excel_export_simple.py - Excel export segito
+- test\                  - Teszt DOCX fajlok
+- results\               - Eredmenyek
+- rf_env\                - Python kornyezet
+
+HASZNALAT:
+1. Helyezze a DOCX fajlokat a konfiguralt bemeneti konyvtarba
+2. Futtassa: start.bat
+3. Ellenorizze az email-ben erkezett eredmenyeket
+4. Excel fajl: kimeneti konyvtar
+
+HIBAKERESO:
+- Log: results\log.html
+- Report: results\report.html
+- Konfiguracio: Plagium.config szerkesztese
+
+EMAIL PROBLEMAK:
+- Ellenorizze, hogy az Outlook fut-e
+- Ellenorizze az email cimet a Plagium.config-ban
+
+EMAIL AUTOMATIKUS KÜLDÉS:
+� A rendszer TELJES MÉRTÉKBEN AUTOMATIKUS email küldést használ!
+📋 MŰKÖDÉSI MÓDOK:
+1. 🎯 ELSŐDLEGES: SMTP szerver automatikus küldés
+   - Próbálkozik helyi SMTP szerverrel (localhost:25)
+   - Próbálkozik egyéb SMTP szerverekkel
+   - TELJESEN automatikus, nincs manuális beavatkozás
+
+2. 🔄 MÁSODLAGOS: Outlook COM automatikus küldés  
+   - Ha SMTP nem elérhető, Outlook COM objektummal
+   - mail.Send() automatikus küldés
+   - Nincs felugró ablak, nincs manuális lépés
+
+3. 💾 VÉGSŐ MENTŐÖV: Piszkozatok
+   - Csak akkor, ha minden automatikus módszer sikertelen
+   - Email mentve a Piszkozatok mappába
+
+✅ ELŐNYÖK:
+- 100% automatikus folyamat
+- Nincs felhasználói beavatkozás szükséges  
+- Többféle küldési módszer
+- Megbízható email kézbesítés
+
+OUTLOOK BEALLITASOK:
+- Outlook-nak futnia kell a robot inditasa elott
+- Beallitott email fiokkal kell rendelkezni
+- Biztonsagi beallitasok: COM objektumok engedelmezese
+- FIGYELEM: Outlook biztonsagi riasztasok engedélyezése szükséges
+
+TAMOGATAS:
+- Dokumentacio: README fajlok
+- Hibajegy: Robot Framework log fajlok
