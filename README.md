@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+# DuplikacioEllenorzesRobot
 # 🤖 Robot Framework Plágium Ellenőrző Rendszer
 
 [![Robot Framework](https://img.shields.io/badge/Robot%20Framework-6.1.1-green.svg)](https://robotframework.org/)
@@ -304,6 +304,3 @@ Ez a projekt [MIT](LICENSE) licenc alatt áll. Lásd a `LICENSE` fájlt a részl
 
 *🤖 Robot Framework Plágium Ellenőrző v2.1.0*  
 *📅 Utolsó frissítés: 2025. augusztus 25.*
-=======
-# DuplikacioEllenorzesRobot
->>>>>>> 9f61c4cc3353cf12378925c1e049202b997d4f71

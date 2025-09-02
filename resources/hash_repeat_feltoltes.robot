@@ -76,7 +76,7 @@ Hash Es Repeat Feltoltes
                 ${source_record}=    Get From List    ${source_result}    0
                 ${source_file_name}=    Get From List    ${source_record}    0
                 ${source_file_path}=    Get From List    ${source_record}    1
-                Log To Console    ${source_file_path}/${source_file_name}
+                #Log To Console    ${source_file_path}/${source_file_name}
             END
             ${file_path}=    Evaluate    os.path.dirname(r"${docx_file}")    modules=os
             ${current_date}=    Evaluate    __import__('datetime').datetime.now().strftime('%Y-%m-%d')
