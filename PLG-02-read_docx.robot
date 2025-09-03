@@ -136,8 +136,9 @@ DOCX Beolvasás Teszt
             Log To Console    .    no_newline=True    # új tartalom
             ${overview_string}=    Set Variable    ${overview_string}.    # Progress karakter hozzáadása
             ${progress_counter}=    Evaluate    ${progress_counter} + 1
-            # Insert a line break only after every 100th progress character
-            Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
+            # Insert a single line break after every 100th, and a double after every 1000th progress character
+            Run Keyword If    ${progress_counter} % 1000 == 0    Log To Console    \n
+            Run Keyword If    ${progress_counter} % 100 == 0 and ${progress_counter} % 1000 != 0    Log To Console    ${EMPTY}
             # Új tartalom esetén duplikáció számlálók nullázása
             ${aktualis_duplikacio_szamlaló}=    Set Variable    0
             ${ismetelt_karakterszam}=    Set Variable    0
@@ -150,14 +151,16 @@ DOCX Beolvasás Teszt
                 Log To Console    !    no_newline=True    # másolt tartalom
                 ${overview_string}=    Set Variable    ${overview_string}!    # Progress karakter hozzáadása
                 ${progress_counter}=    Evaluate    ${progress_counter} + 1
-                # Insert a line break after every 1000th progress character
-                Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
+                # Insert a single line break after every 100th, and a double after every 1000th progress character
+                Run Keyword If    ${progress_counter} % 1000 == 0    Log To Console    \n
+                Run Keyword If    ${progress_counter} % 100 == 0 and ${progress_counter} % 1000 != 0    Log To Console    ${EMPTY}
             ELSE
                 Log To Console    *    no_newline=True    # duplikált tartalom
                 ${overview_string}=    Set Variable    ${overview_string}*    # Progress karakter hozzáadása
                 ${progress_counter}=    Evaluate    ${progress_counter} + 1
-                # Insert a line break after every 1000th progress character
-                Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
+                # Insert a single line break after every 100th, and a double after every 1000th progress character
+                Run Keyword If    ${progress_counter} % 1000 == 0    Log To Console    \n
+                Run Keyword If    ${progress_counter} % 100 == 0 and ${progress_counter} % 1000 != 0    Log To Console    ${EMPTY}
             END
             # Ha az előző sor nem volt duplikált, új blokkot kezdünk
             IF    '${elozo_duplikalt}' == 'False'
