@@ -88,9 +88,10 @@ DOCX Beolvasás Teszt
             ${sor_index}=    Evaluate    ${sor_index} + 1
             CONTINUE    # Túl rövid sor, kihagyjuk
         END
-
-
+       
+       
         ${sor_index}=    Evaluate    ${sor_index} + 1
+       
         ${md5}=    Evaluate    __import__('hashlib').md5(u'''${tomoritett}'''.encode('utf-8')).hexdigest()
         # SQL escape-elés: apostrofok duplikálása
         ${escaped_sor}=    Replace String    ${sor}    '    ''
@@ -134,8 +135,8 @@ DOCX Beolvasás Teszt
             Run Keyword And Ignore Error    Execute Sql String    INSERT OR IGNORE INTO hashCodes (hash_value, file_name, file_path, created_date, created_time, line_content, redundancia_id) VALUES ('${md5}', '${file_name_esc}', '${file_path_esc}', '${current_date}', '${current_time}', '${escaped_sor}', ${REDUNDANCIA_ID})
             Log To Console    .    no_newline=True    # új tartalom
             ${overview_string}=    Set Variable    ${overview_string}.    # Progress karakter hozzáadása
-            # Run Keyword If    ${progress_counter} % 100 == 0    Set Variable    ${overview_string}    ${overview_string}${\n}
             ${progress_counter}=    Evaluate    ${progress_counter} + 1
+            # Insert a line break only after every 100th progress character
             Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
             # Új tartalom esetén duplikáció számlálók nullázása
             ${aktualis_duplikacio_szamlaló}=    Set Variable    0
@@ -144,17 +145,18 @@ DOCX Beolvasás Teszt
             ${blokkon_beluli_sor_szam}=    Set Variable    0  # Blokkon belüli számláló nullázása
         ELSE
             # Duplikált tartalom - ellenőrizzük a státuszt a jelenleg ismételt karakterszám alapján
-            IF    ${max_ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
+            #IF    ${max_ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
+            IF    ${ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
                 Log To Console    !    no_newline=True    # másolt tartalom
                 ${overview_string}=    Set Variable    ${overview_string}!    # Progress karakter hozzáadása
-                # Run Keyword If    ${progress_counter} % 100 == 0    Set Variable    ${overview_string}    ${overview_string}${\n}
                 ${progress_counter}=    Evaluate    ${progress_counter} + 1
+                # Insert a line break after every 1000th progress character
                 Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
             ELSE
                 Log To Console    *    no_newline=True    # duplikált tartalom
                 ${overview_string}=    Set Variable    ${overview_string}*    # Progress karakter hozzáadása
-                # Run Keyword If    ${progress_counter} % 100 == 0    Set Variable    ${overview_string}    ${overview_string}${\n}
                 ${progress_counter}=    Evaluate    ${progress_counter} + 1
+                # Insert a line break after every 1000th progress character
                 Run Keyword If    ${progress_counter} % 100 == 0    Log To Console    ${EMPTY}
             END
             # Ha az előző sor nem volt duplikált, új blokkot kezdünk
