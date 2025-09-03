@@ -32,7 +32,7 @@ if not exist "results" (
 )
 
 echo Robot Framework teszt futtatasa...
- rf_env\Scripts\robot.exe --output NONE --log NONE --report NONE PLG-00-main.robot
+rf_env\Scripts\robot.exe --output NONE --log NONE --report NONE PLG-00-main.robot
 
 if errorlevel 1 (
     echo HIBA: A teszt futtatasa sikertelen!
