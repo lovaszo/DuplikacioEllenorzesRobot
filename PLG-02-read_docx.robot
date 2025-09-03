@@ -15,6 +15,8 @@ DOCX Beolvasás Teszt
     ...                10 karakternél rövidebb sorokat kihagyja a feldolgozásból.
     ${szoveg}=    Beolvasom A DOCX Fájlt
     # Ha üres a szöveg vagy tartalmazza a [HIBA] szöveget, azonnal visszatérés
+    #otto was here
+    #Log To Console     ${szoveg}
 
     IF    "[HIBA]" in $szoveg
         Execute Sql String    UPDATE redundancia SET status = 'Hibás', overview = '${szoveg}' WHERE id = ${REDUNDANCIA_ID}
