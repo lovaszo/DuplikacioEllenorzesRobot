@@ -118,6 +118,7 @@ echo.
 
 REM Virtualis kornyezet aktivalasa es csomagok telepitese
 echo Csomagok telepitese...
+rf_env\Scripts\activate
 rf_env\Scripts\pip.exe install --upgrade pip
 rf_env\Scripts\pip.exe install robotframework
 rf_env\Scripts\pip.exe install robotframework-databaselibrary
