@@ -8,6 +8,10 @@ Library     BuiltIn
 Library     Collections
 Library     OperatingSystem
 Library     Process
+Library    libraries/keep_awake.py
+
+Suite Setup    Prevent Sleep
+Suite Teardown    Allow Sleep
 
 *** Variables ***
 
