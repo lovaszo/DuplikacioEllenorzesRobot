@@ -159,7 +159,14 @@ openpyxl==3.1.2
 pywin32==306
 ```
 
+
 ## 🔧 Telepítés részletesen
+
+### 0️⃣ Git konfiguráció (opcionális)
+```powershell
+git config --global user.name "Saját Név"
+git config --global user.email "sajat@email.hu"
+```
 
 ### 1️⃣ Python telepítés
 ```powershell
