@@ -93,23 +93,27 @@ DOCX Beolvasás Teszt
     ${current_time}=    Evaluate    __import__('datetime').datetime.now().strftime('%H:%M:%S')
     ${elozo_duplikalt}=    Set Variable    False
     ${blokkon_beluli_sor_szam}=    Set Variable    0  # Blokkon belüli számláló nullázása
+    ${total_ismetelt_karakterszam}=    Set Variable    0
+    ${max_total_ismetelt_karakterszam}=    Set Variable    0
+    ${max_duplikacio_szamlaló}=    Set Variable    0
         
+
     FOR    ${sor}    IN    @{sorok}
      
        #Log To Console    ------------------- ${sor}-------------------------}
         # Sor hosszának ellenőrzése - token_min karakternél rövidebb sorokat kihagyjuk
              
         ${sor_hossz}=    Get Length    ${sor}
-        IF    ${sor_hossz} < ${TOKEN_MIN}
-            ${sor_index}=    Evaluate    ${sor_index} + 1
-            CONTINUE    # Túl rövid sor, kihagyjuk
-        END
+        #IF    ${sor_hossz} < ${TOKEN_MIN}
+        #    ${sor_index}=    Evaluate    ${sor_index} + 1
+        #    CONTINUE    # Túl rövid sor, kihagyjuk
+        #END
         ${tomoritett}=    Replace String Using Regexp    ${sor}    [^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]    ${EMPTY}
-        ${sor_hossz}=    Get Length    ${tomoritett}
-        IF    ${sor_hossz} < ${TOKEN_MIN}
-            ${sor_index}=    Evaluate    ${sor_index} + 1
-            CONTINUE    # Túl rövid sor, kihagyjuk
-        END
+        #${sor_hossz}=    Get Length    ${tomoritett}
+        #IF    ${sor_hossz} < ${TOKEN_MIN}
+        #    ${sor_index}=    Evaluate    ${sor_index} + 1
+        #    CONTINUE    # Túl rövid sor, kihagyjuk
+        #END
         ${sor_index}=    Evaluate    ${sor_index} + 1
         IF    True    # SQL escape-elés: apostrofok duplikálása
             ${escaped_sor}=    Replace String    ${sor}    '    ''
@@ -125,12 +129,11 @@ DOCX Beolvasás Teszt
         ${marker}=    Set Variable    .
 
         ${aktualis_duplikacio_szamlaló}=    Set Variable    0
-        ${max_duplikacio_szamlaló}=    Set Variable    0
         ${total_duplikacio_szamlaló}=    Set Variable    0
 
         ${ismetelt_karakterszam}=    Set Variable    0
         ${max_ismetelt_karakterszam}=    Set Variable    0
-        ${total_ismetelt_karakterszam}=    Set Variable    0
+       
 
               
         #lekérjük a benne lévő file_name és file_path értékét és escapeljük
@@ -170,55 +173,47 @@ DOCX Beolvasás Teszt
             #Log To Console  ${exists} - ${sor_index} ${sor} -->>>LÉTEZŐ  HASH<<<
             IF     ${elozo_duplikalt} == False
                 ${aktualis_block_id}=    Evaluate    ${aktualis_block_id} + 1
+            ELSE
+                 ${aktualis_duplikacio_szamlaló}=    Evaluate    ${aktualis_duplikacio_szamlaló} + 1
             END
-            ${elozo_duplikalt}=    Set Variable    True
+             ${elozo_duplikalt}=    Set Variable    True
             # Duplikált tartalom esetén számlálók növelése
-            ${aktualis_duplikacio_szamlaló}=    Evaluate    ${aktualis_duplikacio_szamlaló} + 1
             ${sor_hossz}=    Get Length    ${sor}
             ${ismetelt_karakterszam}=    Evaluate    ${ismetelt_karakterszam} + ${sor_hossz}
             # Blokkon belüli sor szám növelése
             ${blokkon_beluli_sor_szam}=    Evaluate    ${blokkon_beluli_sor_szam} + 1
-             # Duplikált tartalom esetén számlálók növelése
-            ${aktualis_duplikacio_szamlaló}=    Evaluate    ${aktualis_duplikacio_szamlaló} + 1
-
-            # Ha előzőleg duplikációs blokkban voltunk, akkor most vége, max értékek frissítése
-            IF    ${aktualis_duplikacio_szamlaló} > 0
-                ${uj_max_duplikacio}=    Evaluate    max(${max_duplikacio_szamlaló}, ${aktualis_duplikacio_szamlaló})
-                ${uj_max_karakter}=    Evaluate    max(${max_ismetelt_karakterszam}, ${ismetelt_karakterszam})
-                ${max_duplikacio_szamlaló}=    Set Variable    ${uj_max_duplikacio}
-                ${max_ismetelt_karakterszam}=    Set Variable    ${uj_max_karakter}
-            END
-            # Új tartalom esetén duplikáció számlálók nullázása
+            ${total_ismetelt_karakterszam}=     Evaluate    ${sor_hossz} + ${total_ismetelt_karakterszam}
+            ${max_total_ismetelt_karakterszam}=    Evaluate    max(${total_ismetelt_karakterszam}, ${max_total_ismetelt_karakterszam})
+            ${max_duplikacio_szamlaló}=    Evaluate    max(${max_duplikacio_szamlaló}, ${aktualis_block_id})
+           
+           # Log To Console   TOTAL_ISMETELT_KARAKTERSZAM: ${total_ismetelt_karakterszam}
+            
+            #${uj_max_duplikacio}=    Evaluate    max(${max_duplikacio_szamlaló}, ${aktualis_duplikacio_szamlaló})
+            #${uj_max_karakter}=    Evaluate    max(${max_ismetelt_karakterszam}, ${ismetelt_karakterszam})
+            #${max_duplikacio_szamlaló}=    Set Variable    ${uj_max_duplikacio}
+            #${max_ismetelt_karakterszam}=    Set Variable    ${uj_max_karakter}
+        # Új tartalom esetén duplikáció számlálók nullázása
             #${aktualis_duplikacio_szamlaló}=    Set Variable    0
-            ${ismetelt_karakterszam}=    Set Variable    0
-            ${elozo_duplikalt}=    Set Variable    True
-            ${blokkon_beluli_sor_szam}=    Set Variable    0  
-
-
+        
            # Duplikált tartalom - ellenőrizzük a státuszt a jelenleg ismételt karakterszám alapján
             IF    ${ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
                 ${marker}=    Set Variable    !
             ELSE
                 ${marker}=    Set Variable    *
             END
+            
+
             #beírás repeat táblába
-            Execute Sql String    INSERT INTO repeat (file_name, file_path, source_file_path, source_file_name, redundancia_id, block_id, line_length, repeated_line, token, created_date, created_time) VALUES ('${file_name_esc}', '${file_path}', '${source_file_path_esc}', '${source_file_name_esc}', ${REDUNDANCIA_ID}, ${aktualis_block_id}, ${sor_hossz}, '${escaped_sor}', '${tomoritett_esc}', '${current_date}', '${current_time}')
+            Execute Sql String    INSERT INTO repeat (file_name, file_path, source_file_path, source_file_name, redundancia_id, block_id, line_length, sum_line_length, repeated_line, token, created_date, created_time) VALUES ('${file_name_esc}', '${file_path}', '${source_file_path_esc}', '${source_file_name_esc}', ${REDUNDANCIA_ID}, ${aktualis_block_id}, ${sor_hossz}, ${total_ismetelt_karakterszam}, '${escaped_sor}', '${tomoritett_esc}', '${current_date}', '${current_time}')
         ELSE
             #
             # Nem létezik a sor még a hash táblában F    '$exists = 0'
             #
             #Log To Console    ${sor_index} ${sor} --<<<HIÁNYZÓ HASH>>>
-            
+            ${elozo_duplikalt}=    Set Variable    False
             # Ha az előző sor nem volt duplikált, új blokkot kezdünk
             ${blokkon_beluli_sor_szam}=    Set Variable    0  # Új blokk indítása esetén nullázás
-    
-            # Maximum értékek frissítése ha szükséges
-            ${uj_max_duplikacio}=    Evaluate    max(${max_duplikacio_szamlaló}, ${aktualis_duplikacio_szamlaló})
-            ${uj_max_karakter}=    Evaluate    max(${max_ismetelt_karakterszam}, ${ismetelt_karakterszam})
-            ${max_duplikacio_szamlaló}=    Set Variable    ${uj_max_duplikacio}
-            ${max_ismetelt_karakterszam}=    Set Variable    ${uj_max_karakter}
-
-           
+            ${ismetelt_karakterszam}=    Set Variable    0       
         END
         # overview sor kiirása
         Log To Console    ${marker}    no_newline=True    # duplikált tartalom
@@ -231,9 +226,9 @@ DOCX Beolvasás Teszt
         #az első előfordulás hosszát is beszámítjuk
         ${sor_hossz}=    Get Length    ${sor}
         ${ismetelt_karakterszam}=    Evaluate    ${ismetelt_karakterszam} + ${sor_hossz}
+           
         #Beírjuk a hash táblába
         Run Keyword And Ignore Error    Execute Sql String    INSERT INTO hashCodes (hash_value, file_name, file_path, created_date, created_time, used_by_nbr, line_content, redundancia_id) VALUES ('${md5}', '${file_name_esc}', '${file_path_esc}', '${current_date}', '${current_time}', 0, '${escaped_sor}', ${REDUNDANCIA_ID})
-        
         #Növeljük a használtság számlálót
         Execute Sql String    UPDATE hashCodes SET used_by_nbr = used_by_nbr + 1 WHERE hash_value = '${md5}'   
 
@@ -250,6 +245,6 @@ DOCX Beolvasás Teszt
     ${overview_string_esc}=    Replace String    ${overview_string_esc}    \n    ${EMPTY}
     ${overview_string_esc}=    Replace String    ${overview_string_esc}    \r    ${EMPTY}
     ${overview_string_esc}=    Replace String    ${overview_string_esc}    \t    ${EMPTY}
-    Execute Sql String    UPDATE redundancia SET max_ismetlesek_szama = ${max_duplikacio_szamlaló}, max_ismetelt_karakterszam = ${max_ismetelt_karakterszam}, status = CASE WHEN ${max_ismetelt_karakterszam} < ${CONFIG_THRESHOLD_GYANUS} THEN 'Rendben' WHEN ${max_ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_GYANUS} AND ${max_ismetelt_karakterszam} < ${CONFIG_THRESHOLD_MASOLT} THEN 'Gyanús' ELSE 'Másolt' END, overview = '${overview_string_esc}' WHERE id = ${REDUNDANCIA_ID}
+    Execute Sql String    UPDATE redundancia SET max_ismetlesek_szama = ${max_duplikacio_szamlaló}, max_ismetelt_karakterszam = ${max_total_ismetelt_karakterszam}, status = CASE WHEN ${max_ismetelt_karakterszam} < ${CONFIG_THRESHOLD_GYANUS} THEN 'Rendben' WHEN ${max_ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_GYANUS} AND ${max_ismetelt_karakterszam} < ${CONFIG_THRESHOLD_MASOLT} THEN 'Gyanús' ELSE 'Másolt' END, overview = '${overview_string_esc}' WHERE id = ${REDUNDANCIA_ID}
     # repeat_block_nbr mező update: feldolgozás közben számláljuk
     Execute Sql String    UPDATE redundancia SET repeat_block_nbr = ${aktualis_block_id} WHERE id = ${REDUNDANCIA_ID}
