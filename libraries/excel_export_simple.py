@@ -98,6 +98,7 @@ def create_excel_export(excel_filename=None, output_folder=None):
                     file_path TEXT NOT NULL,
                     created_date TEXT NOT NULL,
                     created_time TEXT NOT NULL,
+                    used_by_nbr INTEGER DEFAULT 0,
                     line_content TEXT,
                     redundancia_id INTEGER,
                     FOREIGN KEY (redundancia_id) REFERENCES redundancia(id)

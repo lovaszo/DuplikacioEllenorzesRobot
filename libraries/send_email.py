@@ -35,25 +35,25 @@ def get_redundancia_statistics():
     threshold_masolt = config.get_status_threshold_masolt()
     conn = sqlite3.connect(config.get_database_file())
     cursor = conn.cursor()
-        # Redundancia tábla automatikus létrehozása, ha nem létezik
-        create_sql = '''
-            CREATE TABLE IF NOT EXISTS redundancia (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                status TEXT DEFAULT 'Rendben',
-                file_path TEXT NOT NULL,
-                file_name TEXT NOT NULL,
-                file_size INTEGER NOT NULL,
-                record_date TEXT NOT NULL,
-                record_time TEXT NOT NULL,
-                max_ismetlesek_szama INTEGER DEFAULT 0,
-                max_ismetelt_karakterszam INTEGER DEFAULT 0,
-                overview TEXT DEFAULT ''
-            )
-        '''
-        print('CREATE TABLE redundancia végrehajtva:')
-        print(create_sql)
-        cursor.execute(create_sql)
-        # hashCodes tábla létrehozása
+    # Redundancia tábla automatikus létrehozása, ha nem létezik
+    create_sql = '''
+        CREATE TABLE IF NOT EXISTS redundancia (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            status TEXT DEFAULT 'Rendben',
+            file_path TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            file_size INTEGER NOT NULL,
+            record_date TEXT NOT NULL,
+            record_time TEXT NOT NULL,
+            max_ismetlesek_szama INTEGER DEFAULT 0,
+            max_ismetelt_karakterszam INTEGER DEFAULT 0,
+            overview TEXT DEFAULT ''
+        )
+    '''
+    print('CREATE TABLE redundancia végrehajtva:')
+    print(create_sql)
+    cursor.execute(create_sql)
+    # hashCodes tábla létrehozása
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS hashCodes (
                 hash_value TEXT(100) PRIMARY KEY,
@@ -61,72 +61,66 @@ def get_redundancia_statistics():
                 file_path TEXT NOT NULL,
                 created_date TEXT NOT NULL,
                 created_time TEXT NOT NULL,
+                used_by_nbr INTEGER DEFAULT 0,
                 line_content TEXT,
                 redundancia_id INTEGER,
                 FOREIGN KEY (redundancia_id) REFERENCES redundancia(id)
             )
         ''')
-        # repeat tábla létrehozása
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS repeat (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                file_name TEXT NOT NULL,
-                source_file_path TEXT,
-                source_file_name TEXT NOT NULL,
-                redundancia_id INTEGER,
-                block_id INTEGER NOT NULL,
-                line_length INTEGER NOT NULL,
-                sum_line_length INTEGER DEFAULT 0,
-                repeated_line TEXT NOT NULL,
-                created_date TEXT NOT NULL,
-                created_time TEXT NOT NULL,
-                FOREIGN KEY (redundancia_id) REFERENCES redundancia(id)
-            )
-        ''')
-        
-        # Összesített statisztikák lekérése
+    # repeat tábla létrehozása
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS repeat (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            file_name TEXT NOT NULL,
+            source_file_path TEXT,
+            source_file_name TEXT NOT NULL,
+            redundancia_id INTEGER,
+            block_id INTEGER NOT NULL,
+            line_length INTEGER NOT NULL,
+            sum_line_length INTEGER DEFAULT 0,
+            repeated_line TEXT NOT NULL,
+            created_date TEXT NOT NULL,
+            created_time TEXT NOT NULL,
+            FOREIGN KEY (redundancia_id) REFERENCES redundancia(id)
+        )
+    ''')
+
     # Összesített statisztikák lekérése
-            cursor.execute(f"""
-                SELECT 
-                    COUNT(*) as total_documents,
-                    SUM(CASE WHEN max_ismetelt_karakterszam < {threshold_gyanus} THEN 1 ELSE 0 END) as rendben,
-                    SUM(CASE WHEN max_ismetelt_karakterszam >= {threshold_gyanus} AND max_ismetelt_karakterszam < {threshold_masolt} THEN 1 ELSE 0 END) as gyanus,
-                    SUM(CASE WHEN max_ismetelt_karakterszam >= {threshold_masolt} THEN 1 ELSE 0 END) as masolt
-                FROM redundancia
-            """)
-            stats = cursor.fetchone()
-            # A mai nap feldolgozott fájlok lekérése státusszal
-            cursor.execute("""
-                SELECT file_name, record_date, record_time, status, max_ismetelt_karakterszam, overview
-                FROM redundancia 
-                WHERE record_date = date('now')
-                ORDER BY record_time DESC
-            """)
-            today_files = cursor.fetchall()
-            conn.close()
-            if stats:
-                total, rendben, gyanus, masolt = stats
-                if total > 0:
-                    rendben_percent = round((rendben / total) * 100, 1)
-                    gyanus_percent = round((gyanus / total) * 100, 1)
-                    masolt_percent = round((masolt / total) * 100, 1)
-                    return {
-                        'total': total,
-                        'rendben': rendben,
-                        'gyanus': gyanus,
-                        'masolt': masolt,
-                        'rendben_percent': rendben_percent,
-                        'gyanus_percent': gyanus_percent,
-                        'masolt_percent': masolt_percent,
-                        'today_files': today_files
-                    }
-            return None
-        except Exception as e:
-            # print(f"HIBA: Statisztikák lekérése sikertelen - {str(e)}")  # [DEBUG] commented out for production
-            return None
-    # (A belső except blokk eltávolítva, csak a külső try-except marad)
-    output_folder = config.get_output_folder()
-    email_subject = config.get_email_subject()
+    cursor.execute(f"""
+        SELECT 
+            COUNT(*) as total_documents,
+            SUM(CASE WHEN max_ismetelt_karakterszam < {threshold_gyanus} THEN 1 ELSE 0 END) as rendben,
+            SUM(CASE WHEN max_ismetelt_karakterszam >= {threshold_gyanus} AND max_ismetelt_karakterszam < {threshold_masolt} THEN 1 ELSE 0 END) as gyanus,
+            SUM(CASE WHEN max_ismetelt_karakterszam >= {threshold_masolt} THEN 1 ELSE 0 END) as masolt
+        FROM redundancia
+    """)
+    stats = cursor.fetchone()
+    # A mai nap feldolgozott fájlok lekérése státusszal
+    cursor.execute("""
+        SELECT file_name, record_date, record_time, status, max_ismetelt_karakterszam, overview
+        FROM redundancia 
+        WHERE record_date = date('now')
+        ORDER BY record_time DESC
+    """)
+    today_files = cursor.fetchall()
+    conn.close()
+    if stats:
+        total, rendben, gyanus, masolt = stats
+        if total > 0:
+            rendben_percent = round((rendben / total) * 100, 1)
+            gyanus_percent = round((gyanus / total) * 100, 1)
+            masolt_percent = round((masolt / total) * 100, 1)
+            return {
+                'total': total,
+                'rendben': rendben,
+                'gyanus': gyanus,
+                'masolt': masolt,
+                'rendben_percent': rendben_percent,
+                'gyanus_percent': gyanus_percent,
+                'masolt_percent': masolt_percent,
+                'today_files': today_files
+            }
+    return None
     excel_prefix = config.get_excel_prefix()
     from_email = "duplikacio.ellenorzo@system.local"  # Módosítható
     subject = f"{email_subject} - {datetime.now().strftime('%Y-%m-%d %H:%M')}"
