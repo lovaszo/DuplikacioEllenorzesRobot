@@ -130,7 +130,7 @@ Hash táblák ellenőrzése
     
     # redundancia tábla létrehozása ha nem létezik (elsőként, mivel ez lesz a fő tábla)
    Log To Console    CREATE TABLE IF NOT EXISTS redundancia
-    Execute Sql String    CREATE TABLE IF NOT EXISTS redundancia (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT DEFAULT 'Rendben', file_path TEXT, file_name TEXT NOT NULL, file_size INTEGER NOT NULL, line_number INTEGER DEFAULT 0, repeat_block_nbr INTEGER DEFAULT 0, max_ismetlesek_szama INTEGER DEFAULT 0, max_ismetelt_karakterszam INTEGER DEFAULT 0, overview TEXT DEFAULT '', record_date TEXT NOT NULL, record_time TEXT NOT NULL)
+    Execute Sql String    CREATE TABLE IF NOT EXISTS redundancia (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT DEFAULT 'Rendben', file_path TEXT, file_name TEXT NOT NULL, file_size INTEGER NOT NULL, line_number INTEGER DEFAULT 0, repeat_block_nbr INTEGER DEFAULT 0, max_ismetlesek_szama INTEGER DEFAULT 0, max_ismetelt_karakterszam INTEGER DEFAULT 0, repeated_percent REAL DEFAULT 0, overview TEXT DEFAULT '', record_date TEXT NOT NULL, record_time TEXT NOT NULL)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_redundancia_id ON redundancia(id)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_redundancia_file ON redundancia(file_name, file_path)
     

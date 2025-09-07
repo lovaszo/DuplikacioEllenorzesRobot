@@ -52,8 +52,13 @@ DOCX Beolvasás Teszt
     ${ismetelt_karakterszam}=    Set Variable    0
     ${in_group_ismetelt_karakterszam}=    Set Variable    0
     ${max_ismetelt_karakterszam}=    Set Variable    0
-    ${total_ismetelt_karakterszam}=    Set Variable    0
+    
     ${max_total_ismetelt_karakterszam}=    Set Variable    0
+    ${total_karakterszam}=    Set Variable    0
+
+    ${total_karakterszam}=    Set Variable    0
+    ${total_ismetelt_karakterszam}=    Set Variable    0
+
 
     ${elozo_duplikalt}=    Set Variable    False
     ${aktualis_block_id}=    Set Variable    0
@@ -115,7 +120,7 @@ DOCX Beolvasás Teszt
         ${tomoritett}=    Replace String Using Regexp    ${sor}    [^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]    ${EMPTY}
         ${sor_index}=    Evaluate    ${sor_index} + 1
         #Log To Console    \n${sor_index}--> ${sor}}\n
-         
+        ${total_karakterszam}=    Evaluate    ${total_karakterszam} + ${sor_hossz}
 
         IF    True    # SQL escape-elés: apostrofok duplikálása
             ${escaped_sor}=    Replace String    ${sor}    '    ''
@@ -136,6 +141,7 @@ DOCX Beolvasás Teszt
         IF    $exists > 0     #már létezik
             #Log To Console  ${exists} - ${sor_index} ${sor} -->>>LÉTEZŐ  HASH<<<
           #lekérjük a benne lévő file_name és file_path értékét és escapeljük
+            ${total_ismetelt_karakterszam}=    Evaluate    ${total_ismetelt_karakterszam} + ${sor_hossz}
             @{source_result}=    Query    SELECT file_name, file_path FROM hashCodes WHERE hash_value = '${md5}'  LIMIT 1
             IF     True    #source_file kezelése
                 ${source_file_name}=    Set Variable    unknown
@@ -228,7 +234,8 @@ DOCX Beolvasás Teszt
         Run Keyword If    ${progress_counter} % 100 == 0 and ${progress_counter} % 1000 != 0    Log To Console    ${EMPTY}
         
         #az első előfordulás hosszát is beszámítjuk
-        ${sor_hossz}=    Get Length    ${sor}
+    ${sor_hossz}=    Get Length    ${sor}
+    ${total_karakterszam}=    Evaluate    ${total_karakterszam} + ${sor_hossz}
         ${ismetelt_karakterszam}=    Evaluate    ${ismetelt_karakterszam} + ${sor_hossz}
            
         #Beírjuk a hash táblába
@@ -250,8 +257,12 @@ DOCX Beolvasás Teszt
     ${overview_string_esc}=    Replace String    ${overview_string_esc}    \r    ${EMPTY}
     ${overview_string_esc}=    Replace String    ${overview_string_esc}    \t    ${EMPTY}
 
+    ${repeated_percent}=    Evaluate    round(${max_total_ismetelt_karakterszam} / ${total_karakterszam} * 100, 2) if ${total_karakterszam} > 0 else 0
+
+
 
     Log To Console    [>>> ${current_status} <<<]\n
+    Execute Sql String    UPDATE redundancia SET repeat_block_nbr = ${aktualis_block_id}, max_ismetlesek_szama = ${max_duplikacio_szamlalo}, max_ismetelt_karakterszam = ${max_ismetelt_karakterszam}, repeated_percent = ${repeated_percent}, status = '${current_status}', overview = '${overview_string_esc}' WHERE id = ${REDUNDANCIA_ID}
 
-    Execute Sql String    UPDATE redundancia SET repeat_block_nbr = ${aktualis_block_id} ,max_ismetlesek_szama = ${max_duplikacio_szamlalo}, max_ismetelt_karakterszam = ${max_ismetelt_karakterszam}, status = '${current_status}', overview = '${overview_string_esc}' WHERE id = ${REDUNDANCIA_ID}
+    Execute Sql String    UPDATE redundancia SET repeat_block_nbr = ${aktualis_block_id} ,max_ismetlesek_szama = ${max_duplikacio_szamlalo}, max_ismetelt_karakterszam = ${max_total_ismetelt_karakterszam}, status = '${current_status}', overview = '${overview_string_esc}' WHERE id = ${REDUNDANCIA_ID}
     
