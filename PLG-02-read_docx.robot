@@ -104,7 +104,7 @@ DOCX Beolvasás Teszt
     ${current_time}=    Evaluate    __import__('datetime').datetime.now().strftime('%H:%M:%S')
      FOR    ${sor}    IN    @{sorok}
      
-       #Log To Console    ------------------- ${sor}-------------------------}
+    
        # Szerepel-e legalább 4 szóköz karakter a sor-ban?
         @{spaces}=    Split String    ${sor}    ${SPACE}
         ${space_count}=    Get Length    ${spaces}
@@ -117,6 +117,8 @@ DOCX Beolvasás Teszt
         ${tomoritett}=    Replace String Using Regexp    ${sor}    [^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]    ${EMPTY}
 
         ${sor_index}=    Evaluate    ${sor_index} + 1
+        Log To Console    \n${sor_index}--> ${sor}}\n
+         CONTINUE
         IF    True    # SQL escape-elés: apostrofok duplikálása
             ${escaped_sor}=    Replace String    ${sor}    '    ''
             ${escaped_sor}=    Replace String    ${escaped_sor}    "    ""  # dupla idézőjel escape
@@ -220,7 +222,7 @@ DOCX Beolvasás Teszt
             ${ismetelt_karakterszam}=    Set Variable    0       
         END
         # overview sor kiirása
-        Log To Console    ${marker}    no_newline=True    # duplikált tartalom
+        Log To Console    ${marker} [${sor}]   no_newline=True    # duplikált tartalom
         ${overview_string}=    Set Variable    ${overview_string}${marker}
         ${progress_counter}=    Evaluate    ${progress_counter} + 1
         #Insert a single line break after every 100th, and a double after every 1000th progress character

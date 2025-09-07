@@ -6,11 +6,16 @@ def read_docx(file_path):
         #print(f"Beolvasom a fájlt: {file_path}")
         doc = Document(file_path)
         full_text = []
+        seen = set()
         #táblák olvasása
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
-                    full_text.append(cell.text+". \n")
+                    if id(cell) not in seen:  # ugyanaz a cella csak egyszer
+                        seen.add(id(cell))
+                        text = cell.text.strip()
+                        if text:
+                            full_text.append(text + ". \n")
         result = "\n".join(full_text)
         
         #paragrafusok olvasása
