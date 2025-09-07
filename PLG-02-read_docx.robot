@@ -50,21 +50,20 @@ DOCX Beolvasás Teszt
     #Execute Sql String    UPDATE redundancia SET line_number = ${ossz_sor} WHERE id = ${REDUNDANCIA_ID}
     
     ${ismetelt_karakterszam}=    Set Variable    0
+    ${in_group_ismetelt_karakterszam}=    Set Variable    0
     ${max_ismetelt_karakterszam}=    Set Variable    0
-    
+    ${total_ismetelt_karakterszam}=    Set Variable    0
+    ${max_total_ismetelt_karakterszam}=    Set Variable    0
+
     ${elozo_duplikalt}=    Set Variable    False
     ${aktualis_block_id}=    Set Variable    0
     ${blokkon_beluli_sor_szam}=    Set Variable    0  # Blokkon belüli sor számláló
     
     ${aktualis_duplikacio_szamlaló}=    Set Variable    0
     ${max_duplikacio_szamlalo}=    Set Variable    0
-    
-    
-    ${overview_string}=    Set Variable    ${EMPTY}    # Progress karakterek gyűjtése
-    
-    ${total_ismetelt_karakterszam}=    Set Variable    0
-    ${max_total_ismetelt_karakterszam}=    Set Variable    0
         
+    ${overview_string}=    Set Variable    ${EMPTY}    # Progress karakterek gyűjtése
+            
     ${current_status}=    Set Variable    Üres
     ${marker}=    Set Variable    .
   
@@ -103,8 +102,7 @@ DOCX Beolvasás Teszt
     ${current_date}=    Evaluate    __import__('datetime').datetime.now().strftime('%Y-%m-%d')
     ${current_time}=    Evaluate    __import__('datetime').datetime.now().strftime('%H:%M:%S')
      FOR    ${sor}    IN    @{sorok}
-     
-    
+
        # Szerepel-e legalább 4 szóköz karakter a sor-ban?
         @{spaces}=    Split String    ${sor}    ${SPACE}
         ${space_count}=    Get Length    ${spaces}
@@ -115,10 +113,10 @@ DOCX Beolvasás Teszt
 
         ${sor_hossz}=    Get Length    ${sor}
         ${tomoritett}=    Replace String Using Regexp    ${sor}    [^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]    ${EMPTY}
-
         ${sor_index}=    Evaluate    ${sor_index} + 1
-        Log To Console    \n${sor_index}--> ${sor}}\n
-         CONTINUE
+        #Log To Console    \n${sor_index}--> ${sor}}\n
+         
+
         IF    True    # SQL escape-elés: apostrofok duplikálása
             ${escaped_sor}=    Replace String    ${sor}    '    ''
             ${escaped_sor}=    Replace String    ${escaped_sor}    "    ""  # dupla idézőjel escape
@@ -167,7 +165,8 @@ DOCX Beolvasás Teszt
      
             IF     ${elozo_duplikalt} == False
                 #új ismétlési blokk kezdődik
-                 ${ismetelt_karakterszam}=    Set Variable    0
+                ${ismetelt_karakterszam}=    Set Variable    0
+                ${in_group_ismetelt_karakterszam}=    Set Variable    0
                 ${aktualis_block_id}=    Evaluate    ${aktualis_block_id} + 1
 
             ELSE
@@ -177,11 +176,11 @@ DOCX Beolvasás Teszt
             END
              ${elozo_duplikalt}=    Set Variable    True
             # Duplikált tartalom esetén számlálók növelése
-
-           
             # Blokkon belüli sor szám növelése
             ${blokkon_beluli_sor_szam}=    Evaluate    ${blokkon_beluli_sor_szam} + 1
             ${total_ismetelt_karakterszam}=     Evaluate    ${sor_hossz} + ${total_ismetelt_karakterszam}
+            ${in_group_ismetelt_karakterszam}=     Evaluate    ${sor_hossz} + ${in_group_ismetelt_karakterszam}
+            
             ${max_total_ismetelt_karakterszam}=    Evaluate    max(${total_ismetelt_karakterszam}, ${max_total_ismetelt_karakterszam})
             ${max_duplikacio_szamlalo}=    Evaluate    max(${max_duplikacio_szamlalo}, ${aktualis_block_id})
            
@@ -190,7 +189,7 @@ DOCX Beolvasás Teszt
              IF    ${ismetelt_karakterszam} < ${CONFIG_THRESHOLD_GYANUS}
                     ${marker}=    Set Variable    *
             END
-   IF        ${ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
+            IF        ${ismetelt_karakterszam} >= ${CONFIG_THRESHOLD_MASOLT}
                 IF     '${current_status}' == 'Gyanús'
                     ${current_status}=    Set Variable    Másolt
                 END
@@ -203,11 +202,8 @@ DOCX Beolvasás Teszt
                 ${marker}=    Set Variable    ?
                 #Log To Console    ${marker} ${ismetelt_karakterszam}
             END
-  
-         
-            
             #beírás repeat táblába
-            Execute Sql String    INSERT INTO repeat (file_name, file_path, source_file_path, source_file_name, redundancia_id, block_id, line_length, sum_line_length, repeated_line, token, created_date, created_time) VALUES ('${file_name_esc}', '${file_path}', '${source_file_path_esc}', '${source_file_name_esc}', ${REDUNDANCIA_ID}, ${aktualis_block_id}, ${sor_hossz}, ${max_ismetelt_karakterszam}, '${escaped_sor}', '${tomoritett_esc}', '${current_date}', '${current_time}')
+            Execute Sql String    INSERT INTO repeat (file_name, file_path, source_file_path, source_file_name, redundancia_id, repeat_block_nbr, block_id, line_length, repeated_line, token, created_date, created_time) VALUES ('${file_name_esc}', '${file_path}', '${source_file_path_esc}', '${source_file_name_esc}', ${REDUNDANCIA_ID}, ${blokkon_beluli_sor_szam}, ${aktualis_block_id}, ${sor_hossz}, '${escaped_sor}', '${tomoritett_esc}', '${current_date}', '${current_time}')
         ELSE
             #
             # Nem létezik a sor még a hash táblában F    '$exists = 0'
@@ -220,9 +216,11 @@ DOCX Beolvasás Teszt
             ${elozo_duplikalt}=    Set Variable    False
             ${blokkon_beluli_sor_szam}=    Set Variable    0  # Új blokk indítása esetén nullázás
             ${ismetelt_karakterszam}=    Set Variable    0       
+            
         END
         # overview sor kiirása
-        Log To Console    ${marker} [${sor}]   no_newline=True    # duplikált tartalom
+        #Log To Console    ${marker} [${sor}]   no_newline=True    # duplikált tartalom
+        Log To Console    ${marker}    no_newline=True    # duplikált tartalom
         ${overview_string}=    Set Variable    ${overview_string}${marker}
         ${progress_counter}=    Evaluate    ${progress_counter} + 1
         #Insert a single line break after every 100th, and a double after every 1000th progress character

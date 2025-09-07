@@ -129,21 +129,23 @@ Hash táblák ellenőrzése
     #Run Keyword If    ${file_exists}    Remove File    ${SQLITE_DB_FILE}
     
     # redundancia tábla létrehozása ha nem létezik (elsőként, mivel ez lesz a fő tábla)
+   Log To Console    CREATE TABLE IF NOT EXISTS redundancia
     Execute Sql String    CREATE TABLE IF NOT EXISTS redundancia (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT DEFAULT 'Rendben', file_path TEXT, file_name TEXT NOT NULL, file_size INTEGER NOT NULL, line_number INTEGER DEFAULT 0, repeat_block_nbr INTEGER DEFAULT 0, max_ismetlesek_szama INTEGER DEFAULT 0, max_ismetelt_karakterszam INTEGER DEFAULT 0, overview TEXT DEFAULT '', record_date TEXT NOT NULL, record_time TEXT NOT NULL)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_redundancia_id ON redundancia(id)
-        Execute Sql String    CREATE INDEX IF NOT EXISTS idx_redundancia_file ON redundancia(file_name, file_path)
+    Execute Sql String    CREATE INDEX IF NOT EXISTS idx_redundancia_file ON redundancia(file_name, file_path)
     
     # hashCodes tábla létrehozása ha nem létezik foreign key kapcsolattal és külön file_name, file_path oszlopokkal (document_name nélkül)
+    Log To Console    CREATE TABLE IF NOT EXISTS hashCodes
     Execute Sql String    CREATE TABLE IF NOT EXISTS hashCodes (hash_value TEXT(100) PRIMARY KEY, file_path TEXT NOT NULL, file_name TEXT NOT NULL, created_date TEXT NOT NULL, created_time TEXT NOT NULL, used_by_nbr INTEGER DEFAULT 1, line_content TEXT, redundancia_id INTEGER, FOREIGN KEY (redundancia_id) REFERENCES redundancia(id))
-        Execute Sql String    CREATE INDEX IF NOT EXISTS idx_hashCodes_file ON hashCodes(file_name, file_path)
+    Execute Sql String    CREATE INDEX IF NOT EXISTS idx_hashCodes_file ON hashCodes(file_name, file_path)
     
     # repeat tábla létrehozása ha nem létezik - az ismételt sorok tárolására
-    Execute Sql String    CREATE TABLE IF NOT EXISTS repeat (id INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT NOT NULL, file_path TEXT NOT NULL, source_file_path TEXT, source_file_name TEXT NOT NULL, redundancia_id INTEGER, repeat_block_nbr INTEGER DEFAULT 0, block_id INTEGER NOT NULL, line_length INTEGER NOT NULL, sum_line_length INTEGER DEFAULT 0, repeated_line TEXT NOT NULL, token TEXT, created_date TEXT NOT NULL, created_time TEXT NOT NULL, FOREIGN KEY (redundancia_id) REFERENCES redundancia(id))
-        Execute Sql String    CREATE INDEX IF NOT EXISTS idx_repeat_file ON repeat(file_name, file_path)
+    Log To Console    CREATE TABLE IF NOT EXISTS repeat
+    Execute Sql String    CREATE TABLE IF NOT EXISTS repeat (id INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT NOT NULL, file_path TEXT NOT NULL, source_file_path TEXT, source_file_name TEXT NOT NULL, redundancia_id INTEGER, repeat_block_nbr INTEGER DEFAULT 0, block_id INTEGER NOT NULL, line_length INTEGER NOT NULL, repeated_line TEXT NOT NULL, token TEXT, created_date TEXT NOT NULL, created_time TEXT NOT NULL, FOREIGN KEY (redundancia_id) REFERENCES redundancia(id))
+    Execute Sql String    CREATE INDEX IF NOT EXISTS idx_repeat_file ON repeat(file_name, file_path)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_repeat_redundancia_id ON repeat(redundancia_id)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_repeat_block_id ON repeat(block_id)
     Execute Sql String    CREATE INDEX IF NOT EXISTS idx_repeat_id ON repeat(id)
-    
     # A táblák és oszlopok meglétét nem ellenőrizzük, ha hiányzik valamelyik, a folyamat hibára fut.
     
     # Új felhasználó hozzáadása
@@ -482,4 +484,14 @@ Email Küldés Eredményekkel
             END
         END
     END
+
+
+Check Redundancia Table Exists
+    [Documentation]    Ellenőrzi, hogy a redundancia tábla létezik-e az SQLite adatbázisban
+    Run Keyword And Ignore Error    Connect To Database    sqlite3    ${SQLITE_DB_FILE}
+    ${result}=    Query    SELECT name FROM sqlite_master WHERE type='table' AND name='redundancia'
+    ${table_count}=    Get Length    ${result}
+    Run Keyword If    ${table_count} == 0    Log To Console    FIGYELMEZTETÉS: A 'redundancia' tábla nem létezik az adatbázisban!
+    Run Keyword If    ${table_count} == 0    Fail    A 'redundancia' tábla nem jött létre!
+    Disconnect From Database
 
